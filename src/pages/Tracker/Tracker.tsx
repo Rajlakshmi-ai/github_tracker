@@ -86,12 +86,18 @@ const Home: React.FC = () => {
     }
   }, [tab, page]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>): void => {
-    e.preventDefault();
-    setPage(0);
-    fetchData(username, 1, ROWS_PER_PAGE);
-  };
+  // NEW: Debounce effect for auto-fetching when the user types
+  useEffect(() => {
+    if (!username) return; // Don't fetch if it's empty
 
+    const debounceTimer = setTimeout(() => {
+      setPage(0); // Reset to page 1 on new search
+      fetchData(username, 1, ROWS_PER_PAGE);
+    }, 500);
+
+    return () => clearTimeout(debounceTimer); // Cleanup previous timer
+  }, [username]);
+  
   const handlePageChange = (_: unknown, newPage: number) => {
     setPage(newPage);
   };
@@ -167,7 +173,7 @@ const Home: React.FC = () => {
     <Container maxWidth="lg" sx={{ mt: 4, minHeight: "80vh", color: theme.palette.text.primary }}>
       {/* Auth Form */}
       <Paper elevation={1} sx={{ p: 2, mb: 4, backgroundColor: theme.palette.background.paper }}>
-        <form onSubmit={handleSubmit}>
+        
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
             <TextField
               label="GitHub Username"
@@ -227,19 +233,9 @@ const Home: React.FC = () => {
                 </Box>
               }
             />
-            <Button
-                type="submit"
-                variant="contained"
-                sx={{
-                    minWidth: "100px",
-                    minHeight: "55px",
-                    alignSelf: "flex-start",
-            }}
-            >
-                Fetch Data
-            </Button>
+            
           </Box>
-        </form>
+        
       </Paper>
 
       {/* Filters */}
